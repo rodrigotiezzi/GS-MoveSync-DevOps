@@ -25,33 +25,39 @@ A solução expõe endpoints REST documentados via **Swagger/OpenAPI**, com supo
 ---
 
 ## Arquitetura
-Adicionar FOTO DA ARQUITETURA
+
+![Arquitetura Azure com DevOps e CI/CD](docs/arquitetura.png)
 
 ---
 
 ## Variáveis
 
+> Preencha as senhas no terminal antes de rodar os comandos (elas não ficam no repositório).
+
 ```bash
 # Gerais
 RESOURCE_GROUP_NAME="rg-movesync"
-LOCATION="eastus2"            # Web App - menor latência para o Brasil entre as regiões permitidas
-SQL_LOCATION="centralus"      # Azure SQL - East US 2 não aceita criação de novos servidores SQL
+LOCATION="eastus2"
+SQL_LOCATION="centralus"
 
 # Web App
-WEBAPP_NAME="webapp-movesync-rm562975"
+WEBAPP_NAME="webapp-movesync"
 APP_SERVICE_PLAN="plan-movesync"
-SKU="B1"                      # F1 estoura a cota de CPU (60 min/dia)
-RUNTIME="TOMCAT:11.0-java21"  # projeto é Spring Boot 4 empacotado como .war
+SKU="B1"
+RUNTIME="TOMCAT:11.0-java21"
 
 # Banco de Dados (Azure SQL)
-SQL_SERVER_NAME="sqlserver-movesync-rm562975"
+SQL_SERVER_NAME="sqlserver-movesync"
 SQL_DB_NAME="movesyncdb"
-SQL_ADMIN_USER="movesyncadmin"
-SQL_ADMIN_PASSWORD="<defina-uma-senha-forte>"   # não versionar a senha real
+SQL_ADMIN_USER="dbadmin"
+SQL_ADMIN_PASSWORD=""
 
-# GitHub
-GITHUB_REPO_NAME="rodrigotiezzi/GS-MoveSync-DevOps"
-BRANCH="main"
+# Usuários da aplicação
+ADMIN_USERNAME="admin"
+ADMIN_PASSWORD=""
+OPERADOR_USERNAME="operador"
+OPERADOR_PASSWORD=""
+JWT_SECRET=""
 ```
 
 > **Regiões:** a assinatura Azure for Students só permite `eastus2`, `mexicocentral`, `centralus`, `southafricanorth` e `canadacentral` (consulte com `az policy assignment list --query "[].parameters" -o json`). O Web App fica em **East US 2** (única com cota de B1) e o banco em **Central US**.
@@ -60,33 +66,33 @@ BRANCH="main"
 
 ## Comandos
 
-> Rode **um comando por vez** e espere a resposta (JSON) antes de colar o próximo.
+> Rode **um bloco por vez** e espere a resposta (JSON) antes de colar o próximo.
 
 ### 1. Resource Group
 
 ```bash
-az group create --name rg-movesync --location "eastus2"
+az group create --name "$RESOURCE_GROUP_NAME" --location "$LOCATION"
 ```
 
 ### 2. Banco de dados (Azure SQL)
 
 ```bash
 az sql server create \
-  --name "sqlserver-movesync-rm562975" \
-  --resource-group "rg-movesync" \
-  --location "centralus" \
-  --admin-user "movesyncadmin" \
-  --admin-password "<defina-uma-senha-forte>"
+  --name "$SQL_SERVER_NAME" \
+  --resource-group "$RESOURCE_GROUP_NAME" \
+  --location "$SQL_LOCATION" \
+  --admin-user "$SQL_ADMIN_USER" \
+  --admin-password "$SQL_ADMIN_PASSWORD"
 
 az sql db create \
-  --resource-group rg-movesync \
-  --server sqlserver-movesync-rm562975 \
-  --name movesyncdb \
+  --resource-group "$RESOURCE_GROUP_NAME" \
+  --server "$SQL_SERVER_NAME" \
+  --name "$SQL_DB_NAME" \
   --service-objective Basic
 
 az sql server firewall-rule create \
-  --resource-group rg-movesync \
-  --server sqlserver-movesync-rm562975 \
+  --resource-group "$RESOURCE_GROUP_NAME" \
+  --server "$SQL_SERVER_NAME" \
   --name AllowAzureServices \
   --start-ip-address 0.0.0.0 \
   --end-ip-address 255.255.255.255
@@ -98,47 +104,51 @@ az sql server firewall-rule create \
 
 ```bash
 az appservice plan create \
-  --name plan-movesync \
-  --resource-group rg-movesync \
-  --location eastus2 \
-  --sku B1 \
+  --name "$APP_SERVICE_PLAN" \
+  --resource-group "$RESOURCE_GROUP_NAME" \
+  --location "$LOCATION" \
+  --sku "$SKU" \
   --is-linux
 
 az webapp create \
-  --name webapp-movesync-rm562975 \
-  --resource-group rg-movesync \
-  --plan plan-movesync \
-  --runtime "TOMCAT:11.0-java21"
+  --name "$WEBAPP_NAME" \
+  --resource-group "$RESOURCE_GROUP_NAME" \
+  --plan "$APP_SERVICE_PLAN" \
+  --runtime "$RUNTIME"
 
 az resource update \
-  --resource-group rg-movesync \
+  --resource-group "$RESOURCE_GROUP_NAME" \
   --namespace Microsoft.Web \
   --resource-type basicPublishingCredentialsPolicies \
   --name scm \
-  --parent sites/webapp-movesync-rm562975 \
+  --parent "sites/$WEBAPP_NAME" \
   --set properties.allow=true
 ```
 
 ### 4. Variáveis de ambiente do Web App
 
 ```bash
-az webapp config appsettings set \
-  --name "webapp-movesync-rm562975" \
-  --resource-group "rg-movesync" \
-  --settings \
-    SPRING_DATASOURCE_USERNAME="movesyncadmin" \
-    SPRING_DATASOURCE_PASSWORD="<senha-do-banco>" \
-    SPRING_DATASOURCE_URL="jdbc:sqlserver://sqlserver-movesync-rm562975.database.windows.net:1433;database=movesyncdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;" \
-    JWT_SECRET="<texto-aleatorio-com-32-caracteres-ou-mais>" \
-    ADMIN_USERNAME="admin" \
-    ADMIN_PASSWORD="<senha-do-admin>" \
-    OPERADOR_USERNAME="operador" \
-    OPERADOR_PASSWORD="<senha-do-operador>"
+SPRING_DATASOURCE_URL="jdbc:sqlserver://${SQL_SERVER_NAME}.database.windows.net:1433;database=${SQL_DB_NAME};encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;"
 
-az webapp restart --name webapp-movesync-rm562975 --resource-group rg-movesync
+az webapp config appsettings set \
+  --name "$WEBAPP_NAME" \
+  --resource-group "$RESOURCE_GROUP_NAME" \
+  --settings \
+    SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
+    SPRING_DATASOURCE_USERNAME="$SQL_ADMIN_USER" \
+    SPRING_DATASOURCE_PASSWORD="$SQL_ADMIN_PASSWORD" \
+    JWT_SECRET="$JWT_SECRET" \
+    ADMIN_USERNAME="$ADMIN_USERNAME" \
+    ADMIN_PASSWORD="$ADMIN_PASSWORD" \
+    OPERADOR_USERNAME="$OPERADOR_USERNAME" \
+    OPERADOR_PASSWORD="$OPERADOR_PASSWORD" \
+  -o none
+
+az webapp restart --name "$WEBAPP_NAME" --resource-group "$RESOURCE_GROUP_NAME"
 ```
 
-> Todos esses comandos também estão no script **`scripts/infra-azure.sh`**, que lê as senhas de variáveis de ambiente e ainda executa o `scripts/script-bd.sql` (DDL das 6 tabelas + dados fictícios).
+> O `-o none` evita que o Azure CLI imprima as variáveis (com as senhas) na tela.
+> Todos esses comandos também estão no script **`scripts/infra-azure.sh`**, que ainda executa o `scripts/script-bd.sql` (DDL das 6 tabelas + dados fictícios).
 
 ### 5. Release (Azure DevOps)
 
@@ -148,6 +158,6 @@ Na task **Deploy War to Azure App Service** da Release, selecione o **Runtime St
 
 Agora vamos fazer login!
 Se só entrarmos na página, vamos ter uma tela em branco. É necessário digitar na URL **"/web/login"**.
-EX: https://webapp-movesync-rm562975.azurewebsites.net/web/login
+EX: https://webapp-movesync.azurewebsites.net/web/login
 
-Os usuários de teste são **"admin"** (acesso total) e **"operador"** (leituras, simulação e ajustes), com as senhas definidas nas variáveis de ambiente `ADMIN_PASSWORD` e `OPERADOR_PASSWORD` do passo 4.
+Os usuários de teste são **"admin"** (acesso total) e **"operador"** (leituras, simulação e ajustes), com as senhas definidas em `ADMIN_PASSWORD` e `OPERADOR_PASSWORD`.
