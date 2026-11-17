@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Semáforos')}"></head>
+<body class="app">
+<div th:replace="~{fragments/layout :: menu}"></div>
+
+<main class="conteudo">
+
+    <header class="cabecalho">
+        <div>
+            <h1>Semáforos</h1>
+            <p>Clique no código para ver os sensores e câmeras de cada semáforo.</p>
+        </div>
+        <a class="btn btn-primario" th:href="@{/web/semaforo/novo}">Novo semáforo</a>
+    </header>
+
+    <div class="vazio-bloco" th:if="${semaforos.content.isEmpty()}">
+        <p>Nenhum semáforo cadastrado.</p>
+        <span class="dica">Depois de cadastrar o semáforo, vincule os sensores na tela de edição.</span>
+        <a class="btn btn-primario" th:href="@{/web/semaforo/novo}">Cadastrar semáforo</a>
+    </div>
+
+    <div class="tabela-card" th:if="${!semaforos.content.isEmpty()}">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Código</th>
+                <th>Cruzamento</th>
+                <th>Tipo</th>
+                <th>Verde / Amarelo / Vermelho</th>
+                <th>Status</th>
+                <th class="acoes-col">Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            <th:block th:each="sem : ${semaforos.content}">
+                <tr>
+                    <td class="id" th:text="${sem.id}">1</td>
+                    <td>
+                        <a href="#" class="expansor" th:attr="data-alvo=${'detalhe-sem-' + sem.id}"
+                           aria-expanded="false" th:text="${sem.codigo}">SEM-001</a>
+                    </td>
+                    <td th:text="${sem.nomeCruzamento}">Cruzamento</td>
+                    <td th:text="${sem.tipo.name() == 'PEDESTRE' ? 'Pedestre' : 'Veicular'}">Veicular</td>
+                    <td th:text="${sem.tempoVerde} + 's / ' + ${sem.tempoAmarelo} + 's / ' + ${sem.tempoVermelho} + 's'">30s / 4s / 30s</td>
+                    <td><span th:replace="~{fragments/layout :: status(${sem.status})}"></span></td>
+                    <td>
+                        <div class="acoes">
+                            <a class="btn btn-secundario btn-pequeno"
+                               th:href="@{/web/semaforo/{id}/editar(id=${sem.id})}">Editar</a>
+                            <form th:action="@{/web/semaforo/{id}/deletar(id=${sem.id})}" method="post">
+                                <button type="submit" class="btn btn-perigo btn-pequeno"
+                                        onclick="return confirm('Confirma exclusão?')">Excluir</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="detalhe" hidden th:id="${'detalhe-sem-' + sem.id}">
+                    <td colspan="7">
+                        <div class="detalhe-grade">
+                            <div>
+                                <h3>Sensores e câmeras de <span th:text="${sem.codigo}">SEM-001</span></h3>
+                                <ul th:if="${!dispositivosPorSemaforo[sem.id].isEmpty()}">
+                                    <li th:each="d : ${dispositivosPorSemaforo[sem.id]}">
+                                        <span th:text="${d.codigo}">CAM-001</span>
+                                        <small th:text="${d.tipo}">CAMERA</small>
+                                        <small th:text="${d.online} ? 'Online' : 'Offline'">Online</small>
+                                    </li>
+                                </ul>
+                                <p th:if="${dispositivosPorSemaforo[sem.id].isEmpty()}" class="vazio">
+                                    Nenhum dispositivo vinculado.
+                                    <a th:href="@{/web/semaforo/{id}/editar(id=${sem.id})}">Vincular dispositivo</a>
+                                </p>
+                            </div>
+                            <div>
+                                <h3>Ciclo</h3>
+                                <p th:text="'Ciclo completo de ' + ${sem.cicloTotal} + ' segundos.'">Ciclo de 64 segundos.</p>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </th:block>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{fragments/layout :: paginacao(${semaforos}, '/web/semaforo')}"></div>
+
+</main>
+</body>
+</html>

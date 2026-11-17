@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Leituras de tráfego')}"></head>
+<body class="app">
+<div th:replace="~{fragments/layout :: menu}"></div>
+
+<main class="conteudo">
+
+    <header class="cabecalho">
+        <div>
+            <h1>Leituras de tráfego</h1>
+            <p>Fluxo medido pelos sensores e câmeras. Os dados são fictícios: use "Simular leituras" para gerar novos.</p>
+        </div>
+        <div class="acoes">
+            <form th:action="@{/web/leitura/simular}" method="post">
+                <input type="hidden" name="quantidade" value="5">
+                <button type="submit" class="btn btn-secundario">Simular leituras</button>
+            </form>
+            <a class="btn btn-primario" th:href="@{/web/leitura/novo}">Registrar leitura</a>
+        </div>
+    </header>
+
+    <p class="aviso aviso-ok" th:if="${mensagemOk}" th:text="${mensagemOk}">Leituras simuladas.</p>
+
+    <div class="vazio-bloco" th:if="${leituras.content.isEmpty()}">
+        <p>Nenhuma leitura registrada.</p>
+        <span class="dica">Vincule um sensor online a um semáforo ativo e clique em "Simular leituras".</span>
+    </div>
+
+    <div class="tabela-card" th:if="${!leituras.content.isEmpty()}">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Data e hora</th>
+                <th>Semáforo</th>
+                <th>Dispositivo</th>
+                <th>Veículos</th>
+                <th>Pedestres</th>
+                <th>Velocidade média</th>
+                <th class="acoes-col">Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="l : ${leituras.content}">
+                <td class="id" th:text="${l.id}">1</td>
+                <td th:text="${#temporals.format(l.dataHora, 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</td>
+                <td th:text="${l.codigoSemaforo}">SEM-001</td>
+                <td th:text="${l.codigoDispositivo}">CAM-001</td>
+                <td th:text="${l.qtdVeiculos}">20</td>
+                <td th:text="${l.qtdPedestres}">5</td>
+                <td th:text="${l.velocidadeMedia != null} ? ${l.velocidadeMedia} + ' km/h' : ''">30 km/h</td>
+                <td>
+                    <div class="acoes">
+                        <a class="btn btn-secundario btn-pequeno"
+                           th:href="@{/web/leitura/{id}/editar(id=${l.id})}">Editar</a>
+                        <form th:action="@{/web/leitura/{id}/deletar(id=${l.id})}" method="post">
+                            <button type="submit" class="btn btn-perigo btn-pequeno"
+                                    onclick="return confirm('Confirma exclusão?')">Excluir</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{fragments/layout :: paginacao(${leituras}, '/web/leitura')}"></div>
+
+</main>
+</body>
+</html>

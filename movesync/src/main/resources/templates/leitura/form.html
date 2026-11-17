@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${modoEdicao} ? 'Editar Leitura' : 'Nova Leitura')}"></head>
+<body class="app">
+<div th:replace="~{fragments/layout :: menu}"></div>
+
+<main class="conteudo">
+
+    <a class="link-voltar" th:href="@{/web/leitura}">Voltar para leituras</a>
+    <header class="cabecalho">
+        <h1 th:text="${modoEdicao} ? 'Editar leitura' : 'Registrar leitura'">Leitura</h1>
+    </header>
+
+    <div class="vazio-bloco" th:if="${semaforos.isEmpty() or dispositivos.isEmpty()}">
+        <p>É preciso ter ao menos um semáforo e um dispositivo vinculado a ele.</p>
+    </div>
+
+    <form class="form-card" th:if="${!semaforos.isEmpty() and !dispositivos.isEmpty()}"
+          th:action="${modoEdicao} ? @{/web/leitura/{id}(id=${id})} : @{/web/leitura}"
+          th:object="${leitura}"
+          method="post">
+
+        <div class="form-grade">
+            <div class="campo">
+                <label for="idSemaforo">Semáforo</label>
+                <select id="idSemaforo" th:field="*{idSemaforo}"
+                        th:classappend="${#fields.hasErrors('idSemaforo')} ? 'invalido'">
+                    <option th:each="sem : ${semaforos}" th:value="${sem.id}"
+                            th:text="${sem.codigo} + ' - ' + ${sem.nomeCruzamento}"></option>
+                </select>
+                <span class="erro-campo" th:if="${#fields.hasErrors('idSemaforo')}" th:errors="*{idSemaforo}"></span>
+            </div>
+
+            <div class="campo">
+                <label for="idDispositivo">Dispositivo (precisa estar vinculado ao semáforo)</label>
+                <select id="idDispositivo" th:field="*{idDispositivo}"
+                        th:classappend="${#fields.hasErrors('idDispositivo')} ? 'invalido'">
+                    <option th:each="d : ${dispositivos}" th:value="${d.id}"
+                            th:text="${d.codigo} + ' (' + ${d.tipo} + ')'"></option>
+                </select>
+                <span class="erro-campo" th:if="${#fields.hasErrors('idDispositivo')}" th:errors="*{idDispositivo}"></span>
+            </div>
+
+            <div class="campo">
+                <label for="dataHora">Data e hora (vazio = agora)</label>
+                <input type="datetime-local" id="dataHora" th:field="*{dataHora}"
+                       th:classappend="${#fields.hasErrors('dataHora')} ? 'invalido'">
+                <span class="erro-campo" th:if="${#fields.hasErrors('dataHora')}" th:errors="*{dataHora}"></span>
+            </div>
+
+            <div class="campo">
+                <label for="qtdVeiculos">Veículos</label>
+                <input type="number" id="qtdVeiculos" th:field="*{qtdVeiculos}"
+                       th:classappend="${#fields.hasErrors('qtdVeiculos')} ? 'invalido'">
+                <span class="erro-campo" th:if="${#fields.hasErrors('qtdVeiculos')}" th:errors="*{qtdVeiculos}"></span>
+            </div>
+
+            <div class="campo">
+                <label for="qtdPedestres">Pedestres</label>
+                <input type="number" id="qtdPedestres" th:field="*{qtdPedestres}"
+                       th:classappend="${#fields.hasErrors('qtdPedestres')} ? 'invalido'">
+                <span class="erro-campo" th:if="${#fields.hasErrors('qtdPedestres')}" th:errors="*{qtdPedestres}"></span>
+            </div>
+
+            <div class="campo">
+                <label for="velocidadeMedia">Velocidade média (km/h)</label>
+                <input type="number" step="0.1" id="velocidadeMedia" th:field="*{velocidadeMedia}"
+                       th:classappend="${#fields.hasErrors('velocidadeMedia')} ? 'invalido'">
+                <span class="erro-campo" th:if="${#fields.hasErrors('velocidadeMedia')}" th:errors="*{velocidadeMedia}"></span>
+            </div>
+        </div>
+
+        <div class="form-acoes">
+            <button type="submit" class="btn btn-primario">Salvar leitura</button>
+            <a class="btn btn-secundario" th:href="@{/web/leitura}">Cancelar</a>
+        </div>
+    </form>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Cruzamentos')}"></head>
+<body class="app">
+<div th:replace="~{fragments/layout :: menu}"></div>
+
+<main class="conteudo">
+
+    <header class="cabecalho">
+        <div>
+            <h1>Cruzamentos</h1>
+            <p>Clique no nome para ver os semáforos instalados em cada cruzamento.</p>
+        </div>
+        <a class="btn btn-primario" th:href="@{/web/cruzamento/novo}">Novo cruzamento</a>
+    </header>
+
+    <div class="vazio-bloco" th:if="${cruzamentos.content.isEmpty()}">
+        <p>Nenhum cruzamento cadastrado.</p>
+        <span class="dica">Comece pelo cruzamento; depois cadastre os semáforos dele.</span>
+        <a class="btn btn-primario" th:href="@{/web/cruzamento/novo}">Cadastrar cruzamento</a>
+    </div>
+
+    <div class="tabela-card" th:if="${!cruzamentos.content.isEmpty()}">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Endereço</th>
+                <th>Bairro</th>
+                <th>Semáforos</th>
+                <th class="acoes-col">Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            <th:block th:each="cz : ${cruzamentos.content}">
+                <tr>
+                    <td class="id" th:text="${cz.id}">1</td>
+                    <td>
+                        <a href="#" class="expansor" th:attr="data-alvo=${'detalhe-cz-' + cz.id}"
+                           aria-expanded="false" th:text="${cz.nome}">Nome</a>
+                    </td>
+                    <td th:text="${cz.endereco}">Endereço</td>
+                    <td th:text="${cz.bairro}">Bairro</td>
+                    <td th:text="${semaforosPorCruzamento[cz.id].size()}">0</td>
+                    <td>
+                        <div class="acoes">
+                            <a class="btn btn-secundario btn-pequeno"
+                               th:href="@{/web/cruzamento/{id}/editar(id=${cz.id})}">Editar</a>
+                            <form th:action="@{/web/cruzamento/{id}/deletar(id=${cz.id})}" method="post">
+                                <button type="submit" class="btn btn-perigo btn-pequeno"
+                                        onclick="return confirm('Confirma exclusão?')">Excluir</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="detalhe" hidden th:id="${'detalhe-cz-' + cz.id}">
+                    <td colspan="6">
+                        <div class="detalhe-grade">
+                            <div>
+                                <h3>Semáforos de <span th:text="${cz.nome}">Cruzamento</span></h3>
+                                <ul th:if="${!semaforosPorCruzamento[cz.id].isEmpty()}">
+                                    <li th:each="sem : ${semaforosPorCruzamento[cz.id]}">
+                                        <span th:text="${sem.codigo}">SEM-001</span>
+                                        <small th:text="${sem.tipo == T(br.com.fiap.movesync.enums.TipoSemaforo).PEDESTRE ? 'Pedestre' : 'Veicular'}">Veicular</small>
+                                        <small th:text="'Verde ' + ${sem.tempoVerde} + 's'">Verde 30s</small>
+                                        <span th:replace="~{fragments/layout :: status(${sem.status})}"></span>
+                                    </li>
+                                </ul>
+                                <p th:if="${semaforosPorCruzamento[cz.id].isEmpty()}" class="vazio">
+                                    Nenhum semáforo neste cruzamento.
+                                    <a th:href="@{/web/semaforo/novo}">Cadastrar semáforo</a>
+                                </p>
+                            </div>
+                            <div>
+                                <h3>Localização</h3>
+                                <p th:if="${cz.latitude != null and cz.longitude != null}"
+                                   th:text="${cz.latitude} + ', ' + ${cz.longitude}">-23.56, -46.65</p>
+                                <p th:if="${cz.latitude == null or cz.longitude == null}" class="vazio">Sem coordenadas.</p>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </th:block>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{fragments/layout :: paginacao(${cruzamentos}, '/web/cruzamento')}"></div>
+
+</main>
+</body>
+</html>

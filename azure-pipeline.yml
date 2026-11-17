@@ -1,0 +1,92 @@
+# =====================================================================================
+# MoveSync - Pipeline de CI (Azure Pipelines / YAML)
+# Roda AUTOMATICAMENTE a cada merge na branch main (a main é protegida: só entra via PR).
+# Etapas: Java 21 -> build Maven -> testes JUnit/Mockito -> cobertura JaCoCo -> artefato .war
+# A Release (CD) é disparada sozinha quando este pipeline publica um novo artefato "drop".
+# =====================================================================================
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - README.md
+      - docs/*
+
+# Validação de PR fica a cargo da política da branch; aqui o CI roda só após o merge
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+# Variáveis de ambiente da pipeline (nada de senha aqui: segredos ficam no App Service / Library)
+variables:
+  javaVersion: '21'
+  workingDir: 'movesync'
+  mavenPom: 'movesync/pom.xml'
+  artifactName: 'drop'
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+
+stages:
+  - stage: Build
+    displayName: 'Build e Testes'
+    jobs:
+      - job: BuildTest
+        displayName: 'Compilar, testar e empacotar'
+        steps:
+          - task: JavaToolInstaller@0
+            displayName: 'Configurar Java $(javaVersion)'
+            inputs:
+              versionSpec: '$(javaVersion)'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+
+          - task: Cache@2
+            displayName: 'Cache das dependências Maven'
+            inputs:
+              key: 'maven | "$(Agent.OS)" | $(mavenPom)'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+              path: $(MAVEN_CACHE_FOLDER)
+
+          - script: mvn -B clean verify
+            displayName: 'Maven: build + testes automatizados (JUnit 5 / Mockito)'
+            workingDirectory: $(workingDir)
+
+          - task: PublishTestResults@2
+            displayName: 'Publicar resultados dos testes'
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '$(workingDir)/target/surefire-reports/TEST-*.xml'
+              testRunTitle: 'MoveSync - Testes unitários'
+              failTaskOnFailedTests: true
+
+          - task: PublishCodeCoverageResults@2
+            displayName: 'Publicar cobertura de código (JaCoCo)'
+            condition: succeededOrFailed()
+            inputs:
+              summaryFileLocation: '$(workingDir)/target/site/jacoco/jacoco.xml'
+
+          - task: CopyFiles@2
+            displayName: 'Copiar pacote .war para o artefato'
+            inputs:
+              SourceFolder: '$(workingDir)/target'
+              Contents: '*.war'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+          - task: CopyFiles@2
+            displayName: 'Copiar scripts (Azure CLI e banco) para o artefato'
+            inputs:
+              SourceFolder: 'scripts'
+              Contents: '**'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)/scripts'
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publicar artefato "$(artifactName)"'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: '$(artifactName)'
+              publishLocation: 'Container'

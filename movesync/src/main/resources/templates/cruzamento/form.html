@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${modoEdicao} ? 'Editar Cruzamento' : 'Novo Cruzamento')}"></head>
+<body class="app">
+<div th:replace="~{fragments/layout :: menu}"></div>
+
+<main class="conteudo">
+
+    <a class="link-voltar" th:href="@{/web/cruzamento}">Voltar para cruzamentos</a>
+    <header class="cabecalho">
+        <h1 th:text="${modoEdicao} ? 'Editar cruzamento' : 'Novo cruzamento'">Cruzamento</h1>
+    </header>
+
+    <form class="form-card"
+          th:action="${modoEdicao} ? @{/web/cruzamento/{id}(id=${id})} : @{/web/cruzamento}"
+          th:object="${cruzamento}"
+          method="post">
+
+        <div class="form-grade">
+            <div class="campo">
+                <label for="nome">Nome</label>
+                <input type="text" id="nome" th:field="*{nome}" placeholder="Av. Paulista x R. Augusta"
+                       th:classappend="${#fields.hasErrors('nome')} ? 'invalido'">
+                <span class="erro-campo" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
+            </div>
+
+            <div class="campo">
+                <label for="bairro">Bairro</label>
+                <input type="text" id="bairro" th:field="*{bairro}">
+            </div>
+
+            <div class="campo largo">
+                <label for="endereco">Endereço</label>
+                <input type="text" id="endereco" th:field="*{endereco}"
+                       th:classappend="${#fields.hasErrors('endereco')} ? 'invalido'">
+                <span class="erro-campo" th:if="${#fields.hasErrors('endereco')}" th:errors="*{endereco}"></span>
+            </div>
+
+            <div class="campo">
+                <label for="latitude">Latitude</label>
+                <input type="number" step="0.000001" id="latitude" th:field="*{latitude}"
+                       th:classappend="${#fields.hasErrors('latitude')} ? 'invalido'">
+                <span class="erro-campo" th:if="${#fields.hasErrors('latitude')}" th:errors="*{latitude}"></span>
+            </div>
+
+            <div class="campo">
+                <label for="longitude">Longitude</label>
+                <input type="number" step="0.000001" id="longitude" th:field="*{longitude}"
+                       th:classappend="${#fields.hasErrors('longitude')} ? 'invalido'">
+                <span class="erro-campo" th:if="${#fields.hasErrors('longitude')}" th:errors="*{longitude}"></span>
+            </div>
+        </div>
+
+        <div class="form-acoes">
+            <button type="submit" class="btn btn-primario">Salvar cruzamento</button>
+            <a class="btn btn-secundario" th:href="@{/web/cruzamento}">Cancelar</a>
+        </div>
+    </form>
+
+</main>
+</body>
+</html>

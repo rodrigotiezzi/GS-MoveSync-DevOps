@@ -1,0 +1,12 @@
+# Build
+movesync/target/
+target/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+
+# Segredos locais (nunca versionar)
+*.env
+!scripts/variaveis.env.example

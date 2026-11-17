@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Início')}"></head>
+<body class="app">
+<div th:replace="~{fragments/layout :: menu}"></div>
+
+<main class="conteudo">
+
+    <header class="cabecalho">
+        <div>
+            <h1>Bem-vindo ao MoveSync</h1>
+            <p>Resumo da malha de semáforos e últimos ajustes de tempo.</p>
+        </div>
+        <a class="btn btn-primario" th:href="@{/web/leitura/novo}">Registrar leitura</a>
+    </header>
+
+    <section class="resumo" aria-label="Resumo da malha">
+        <a class="resumo-item" th:href="${isAdmin} ? @{/web/cruzamento} : @{/web}">
+            <span class="rotulo">Cruzamentos</span>
+            <span class="numero" th:text="${totalCruzamentos}">0</span>
+        </a>
+        <a class="resumo-item" th:href="${isAdmin} ? @{/web/semaforo} : @{/web}">
+            <span class="rotulo">Semáforos ativos</span>
+            <span class="numero" th:text="${semaforosAtivos} + ' / ' + ${totalSemaforos}">0</span>
+        </a>
+        <a class="resumo-item" th:href="${isAdmin} ? @{/web/semaforo} : @{/web}">
+            <span class="rotulo">Em manutenção</span>
+            <span class="numero" th:text="${semaforosManutencao}">0</span>
+        </a>
+        <a class="resumo-item" th:href="${isAdmin} ? @{/web/dispositivo} : @{/web}">
+            <span class="rotulo">Sensores e câmeras</span>
+            <span class="numero" th:text="${totalDispositivos}">0</span>
+        </a>
+        <a class="resumo-item" th:href="@{/web/leitura}">
+            <span class="rotulo">Leituras registradas</span>
+            <span class="numero" th:text="${totalLeituras}">0</span>
+        </a>
+    </section>
+
+    <section>
+        <div class="secao-topo">
+            <h2>Últimos ajustes de tempo</h2>
+            <a class="link-discreto" th:href="@{/web/ajuste}">Ver todos</a>
+        </div>
+
+        <div class="tabela-card" th:if="${!ultimosAjustes.isEmpty()}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Semáforo</th>
+                    <th>Média de veículos</th>
+                    <th>Verde</th>
+                    <th>Motivo</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="aj : ${ultimosAjustes}">
+                    <td th:text="${#temporals.format(aj.dataHora, 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</td>
+                    <td th:text="${aj.codigoSemaforo}">SEM-001</td>
+                    <td th:text="${aj.mediaVeiculos}">20.0</td>
+                    <td>
+                        <span th:text="${aj.tempoVerdeAnterior} + 's → ' + ${aj.tempoVerdeNovo} + 's'">30s → 45s</span>
+                        <span th:classappend="${aj.variacao > 0} ? 'variacao-mais' : (${aj.variacao < 0} ? 'variacao-menos' : '')"
+                              th:text="'(' + (${aj.variacao > 0} ? '+' : '') + ${aj.variacao} + 's)'">(+15s)</span>
+                    </td>
+                    <td th:text="${aj.motivo}">Fluxo alto</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="vazio-bloco" th:if="${ultimosAjustes.isEmpty()}">
+            <p>Nenhum ajuste de tempo ainda.</p>
+            <span class="dica">Registre leituras de tráfego e peça um ajuste para ver o MoveSync recalcular o verde.</span>
+            <a class="btn btn-primario" th:href="@{/web/ajuste}">Ajustar semáforo</a>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>

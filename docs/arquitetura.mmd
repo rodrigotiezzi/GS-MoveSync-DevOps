@@ -1,0 +1,30 @@
+flowchart TB
+    subgraph USUARIOS["Usuários"]
+        OP["Operador / Admin<br/>(prefeitura, CET)"]
+        IOT["Sensores e câmeras IoT<br/>(dados simulados)"]
+    end
+
+    subgraph DEVOPS["Azure DevOps — projeto MoveSync"]
+        BOARDS["Azure Boards<br/>Epic → Feature → User Story → Task"]
+        REPOS["Azure Repos (Git)<br/>main protegida: PR + revisor + work item"]
+        CI["Pipeline CI (azure-pipeline.yml)<br/>Maven build · JUnit/Mockito · JaCoCo<br/>artefato .war"]
+        CD["Pipeline Release (CD)<br/>Deploy War → App Service<br/>gatilho: novo artefato"]
+        BOARDS -. "vincula commits,<br/>branches e PRs" .- REPOS
+        REPOS -- "merge na main" --> CI
+        CI -- "artefato drop" --> CD
+    end
+
+    subgraph AZURE["Microsoft Azure — rg-movesync (criado por scripts/infra-azure.sh)"]
+        subgraph PLAN["App Service Plan B1 Linux · East US 2"]
+            WEB["Web App webapp-movesync<br/>Tomcat 11 · Java 21 · Spring Boot 4<br/>Thymeleaf (/web) + API REST JWT + Swagger"]
+        end
+        subgraph SQLSRV["Azure SQL Server · Central US"]
+            DB[("movesyncdb<br/>6 tabelas")]
+        end
+        WEB -- "JDBC (TLS) · variáveis de ambiente" --> DB
+    end
+
+    DEV["Equipe de desenvolvimento"] -- "git push / PR" --> REPOS
+    CD -- "deploy" --> WEB
+    OP -- "HTTPS /web" --> WEB
+    IOT -- "HTTPS POST /leitura<br/>ou simulador /leitura/simular" --> WEB

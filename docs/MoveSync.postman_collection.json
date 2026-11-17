@@ -1,0 +1,692 @@
+{
+  "info": {
+    "name": "MoveSync API",
+    "description": "CRUD do MoveSync (dados de IoT fictícios). Rode 'Login' primeiro: o token é salvo automaticamente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://webapp-movesync-rm562975.azurewebsites.net"
+    },
+    {
+      "key": "adminPassword",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (salva token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('token', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cruzamento",
+      "item": [
+        {
+          "name": "Criar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cruzamento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cruzamento"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Av. Faria Lima x R. dos Pinheiros\",\n  \"endereco\": \"Av. Brig. Faria Lima, 2232\",\n  \"bairro\": \"Pinheiros\",\n  \"latitude\": -23.5675,\n  \"longitude\": -46.6936\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cruzamento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cruzamento"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cruzamento/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cruzamento",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cruzamento/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cruzamento",
+                "1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Av. Faria Lima x R. Teodoro Sampaio\",\n  \"endereco\": \"Av. Brig. Faria Lima, 2232\",\n  \"bairro\": \"Pinheiros\",\n  \"latitude\": -23.5675,\n  \"longitude\": -46.6936\n}"
+            }
+          }
+        },
+        {
+          "name": "Excluir",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cruzamento/4",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cruzamento",
+                "4"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Semáforo",
+      "item": [
+        {
+          "name": "Criar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/semaforo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "semaforo"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"SEM-010\",\n  \"tipo\": \"VEICULAR\",\n  \"status\": \"ATIVO\",\n  \"tempoVerde\": 30,\n  \"tempoAmarelo\": 4,\n  \"tempoVermelho\": 30,\n  \"idCruzamento\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/semaforo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "semaforo"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/semaforo/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "semaforo",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Por cruzamento",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/semaforo/cruzamento/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "semaforo",
+                "cruzamento",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/semaforo/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "semaforo",
+                "1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"SEM-001\",\n  \"tipo\": \"VEICULAR\",\n  \"status\": \"ATIVO\",\n  \"tempoVerde\": 40,\n  \"tempoAmarelo\": 4,\n  \"tempoVermelho\": 30,\n  \"idCruzamento\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Alterar status",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/semaforo/1/status/MANUTENCAO",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "semaforo",
+                "1",
+                "status",
+                "MANUTENCAO"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Vincular dispositivo",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/semaforo/1/dispositivo/3",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "semaforo",
+                "1",
+                "dispositivo",
+                "3"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Desvincular dispositivo",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/semaforo/1/dispositivo/3",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "semaforo",
+                "1",
+                "dispositivo",
+                "3"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Ajustar tempo",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/semaforo/1/ajustar-tempo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "semaforo",
+                "1",
+                "ajustar-tempo"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Excluir",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/semaforo/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "semaforo",
+                "5"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dispositivo",
+      "item": [
+        {
+          "name": "Criar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dispositivo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dispositivo"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"CAM-010\",\n  \"tipo\": \"CAMERA\",\n  \"modelo\": \"Câmera fictícia MS-CAM v1\",\n  \"online\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dispositivo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dispositivo"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dispositivo/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dispositivo",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dispositivo/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dispositivo",
+                "1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"CAM-001\",\n  \"tipo\": \"CAMERA\",\n  \"modelo\": \"Câmera fictícia MS-CAM v1\",\n  \"online\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Excluir",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dispositivo/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dispositivo",
+                "5"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Leitura de tráfego",
+      "item": [
+        {
+          "name": "Registrar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/leitura",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leitura"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idSemaforo\": 1,\n  \"idDispositivo\": 1,\n  \"qtdVeiculos\": 42,\n  \"qtdPedestres\": 6,\n  \"velocidadeMedia\": 23.5\n}"
+            }
+          }
+        },
+        {
+          "name": "Simular (fictícias)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/leitura/simular?quantidade=5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leitura",
+                "simular"
+              ],
+              "query": [
+                {
+                  "key": "quantidade",
+                  "value": "5"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/leitura",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leitura"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/leitura/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leitura",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Por semáforo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/leitura/semaforo/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leitura",
+                "semaforo",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/leitura/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leitura",
+                "1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idSemaforo\": 1,\n  \"idDispositivo\": 1,\n  \"qtdVeiculos\": 50,\n  \"qtdPedestres\": 6,\n  \"velocidadeMedia\": 23.5\n}"
+            }
+          }
+        },
+        {
+          "name": "Excluir",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/leitura/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leitura",
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ajuste de tempo",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ajuste",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ajuste"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ajuste/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ajuste",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Por semáforo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ajuste/semaforo/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ajuste",
+                "semaforo",
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

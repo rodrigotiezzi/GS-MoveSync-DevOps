@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Ajustes de tempo')}"></head>
+<body class="app">
+<div th:replace="~{fragments/layout :: menu}"></div>
+
+<main class="conteudo">
+
+    <header class="cabecalho">
+        <div>
+            <h1>Ajustes de tempo</h1>
+            <p>O MoveSync recalcula o verde com a média das 5 últimas leituras: 15 s + 1,5 s por veículo, entre 15 s e 90 s.</p>
+        </div>
+    </header>
+
+    <p class="aviso aviso-ok" th:if="${mensagemOk}" th:text="${mensagemOk}">Ajuste feito.</p>
+
+    <section class="bloco">
+        <h2>Ajustar um semáforo</h2>
+        <form class="form-vinculo" th:if="${!semaforosAtivos.isEmpty()}" th:action="@{/web/ajuste}" method="post">
+            <div class="campo">
+                <label for="idSemaforo">Semáforo ativo</label>
+                <select id="idSemaforo" name="idSemaforo" required>
+                    <option th:each="sem : ${semaforosAtivos}" th:value="${sem.id}"
+                            th:text="${sem.codigo} + ' - ' + ${sem.nomeCruzamento} + ' (verde ' + ${sem.tempoVerde} + 's)'"></option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primario">Ajustar tempo</button>
+        </form>
+        <p th:if="${semaforosAtivos.isEmpty()}" class="vazio">Nenhum semáforo ATIVO para ajustar.</p>
+    </section>
+
+    <div class="vazio-bloco" th:if="${ajustes.content.isEmpty()}">
+        <p>Nenhum ajuste realizado ainda.</p>
+    </div>
+
+    <div class="tabela-card" th:if="${!ajustes.content.isEmpty()}">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Data e hora</th>
+                <th>Semáforo</th>
+                <th>Média de veículos</th>
+                <th>Verde anterior</th>
+                <th>Verde novo</th>
+                <th>Motivo</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="aj : ${ajustes.content}">
+                <td class="id" th:text="${aj.id}">1</td>
+                <td th:text="${#temporals.format(aj.dataHora, 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</td>
+                <td th:text="${aj.codigoSemaforo}">SEM-001</td>
+                <td th:text="${aj.mediaVeiculos}">20.0</td>
+                <td th:text="${aj.tempoVerdeAnterior} + 's'">30s</td>
+                <td>
+                    <span th:text="${aj.tempoVerdeNovo} + 's'">45s</span>
+                    <span th:classappend="${aj.variacao > 0} ? 'variacao-mais' : (${aj.variacao < 0} ? 'variacao-menos' : '')"
+                          th:text="'(' + (${aj.variacao > 0} ? '+' : '') + ${aj.variacao} + 's)'">(+15s)</span>
+                </td>
+                <td th:text="${aj.motivo}">Fluxo alto</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{fragments/layout :: paginacao(${ajustes}, '/web/ajuste')}"></div>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Sensores e câmeras')}"></head>
+<body class="app">
+<div th:replace="~{fragments/layout :: menu}"></div>
+
+<main class="conteudo">
+
+    <header class="cabecalho">
+        <div>
+            <h1>Sensores e câmeras</h1>
+            <p>Dispositivos IoT que enviam as leituras de tráfego (neste protótipo, os dados são simulados).</p>
+        </div>
+        <a class="btn btn-primario" th:href="@{/web/dispositivo/novo}">Novo dispositivo</a>
+    </header>
+
+    <div class="vazio-bloco" th:if="${dispositivos.content.isEmpty()}">
+        <p>Nenhum dispositivo cadastrado.</p>
+        <span class="dica">Cadastre o sensor e depois vincule-o a um semáforo.</span>
+        <a class="btn btn-primario" th:href="@{/web/dispositivo/novo}">Cadastrar dispositivo</a>
+    </div>
+
+    <div class="tabela-card" th:if="${!dispositivos.content.isEmpty()}">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Código</th>
+                <th>Tipo</th>
+                <th>Modelo</th>
+                <th>Situação</th>
+                <th>Semáforos</th>
+                <th class="acoes-col">Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="d : ${dispositivos.content}">
+                <td class="id" th:text="${d.id}">1</td>
+                <td th:text="${d.codigo}">CAM-001</td>
+                <td th:text="${d.tipo}">CAMERA</td>
+                <td th:text="${d.modelo}">Modelo</td>
+                <td>
+                    <span class="status" th:classappend="${d.online} ? 'status-ativo' : 'status-inativo'"
+                          th:text="${d.online} ? 'Online' : 'Offline'">Online</span>
+                </td>
+                <td th:text="${d.idsSemaforos.size()}">0</td>
+                <td>
+                    <div class="acoes">
+                        <a class="btn btn-secundario btn-pequeno"
+                           th:href="@{/web/dispositivo/{id}/editar(id=${d.id})}">Editar</a>
+                        <form th:action="@{/web/dispositivo/{id}/deletar(id=${d.id})}" method="post">
+                            <button type="submit" class="btn btn-perigo btn-pequeno"
+                                    onclick="return confirm('Confirma exclusão?')">Excluir</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{fragments/layout :: paginacao(${dispositivos}, '/web/dispositivo')}"></div>
+
+</main>
+</body>
+</html>
