@@ -25,8 +25,7 @@ A solução expõe endpoints REST documentados via **Swagger/OpenAPI**, com supo
 ---
 
 ## Arquitetura
-
-![Arquitetura Azure com DevOps e CI/CD](docs/arquitetura.png)
+Adicionar FOTO DA ARQUITETURA
 
 ---
 
